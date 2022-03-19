@@ -35,7 +35,8 @@ func main() {
 	mntArg := fmt.Sprintf("--mnt=/proc/%d/ns/mnt", pid)
 	pidArg := fmt.Sprintf("--pid=/proc/%d/ns/pid", pid)
 	netArg := fmt.Sprintf("--net=/proc/%d/ns/net", pid)
-	cmd := exec.Command("/usr/local/bin/nsexec", mntArg, pidArg, netArg, "--local", "--keep-fd=3", "./server")
+	cmd := exec.Command("/usr/local/bin/nsexec", mntArg, pidArg, netArg, "--local", "--keep-fd=3", "./chaos-tproxy-demo")
+	// cmd := exec.Command("/usr/local/bin/nsexec", mntArg, pidArg, netArg, "--local", "--keep-fd=3", "./server")
 	cmd.ExtraFiles = []*os.File{listenSocket}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

@@ -22,7 +22,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			some, err := os.ReadFile("/home/shouxunsun/GolandProjects/chaos-mesh-demo/some")
+			some, err := os.ReadFile("/home/shouxunsun/GolandProjects/src/github.com/RandyLambert/chaos-mesh-demo/some")
 			if err != nil {
 				w.Write([]byte(err.Error()))
 			} else {

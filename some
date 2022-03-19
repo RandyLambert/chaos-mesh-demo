@@ -1,1 +1,2 @@
 ssssssssssssssss
+chaos-tproxy 用的 hyper(https://docs.rs/hyper/latest/hyper/server/conn/struct.Http.html#example) 可以用 UnixStream(https://doc.rust-lang.org/std/os/unix/net/struct.UnixStream.html#method.connect) ,我用了他带的 UnixStream::from_raw_fd() (https://doc.rust-lang.org/stable/std/os/unix/io/trait.FromRawFd.html) 做了可以直接将文件描述符转换为 UnixStream 流,我理解应该可以用,不过还没有测试
