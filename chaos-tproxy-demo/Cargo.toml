@@ -18,6 +18,7 @@ futures-core = { version = "0.3", default-features = false }
 futures-channel = "0.3"
 futures-util = { version = "0.3", default-features = false }
 anyhow = "1.0"
+socket2 = "0.4.4"
 # futures = { version = "0.3", default-features = false }
 
 
