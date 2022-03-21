@@ -1,9 +1,6 @@
-use tokio::net::UnixStream;
-use std::os::unix::net::UnixStream as StdUnixStream;
+use tokio::net::{UnixListener};
 #[cfg(unix)]
-use std::os::unix::io::{FromRawFd, AsRawFd};
-#[cfg(target_os = "wasi")]
-use std::os::wasi::io::{FromRawFd, AsRawFd};
+use std::os::unix::io::{FromRawFd};
 use hyper::server::conn::Http;
 use hyper::{Body, Request, Response, StatusCode, Version};
 use std::task::{Context, Poll};
@@ -13,9 +10,6 @@ use tokio::sync::oneshot::{channel, Receiver, Sender};
 use tokio::task::JoinHandle;
 use anyhow::Error;
 use std::{thread, time};
-use socket2::{Socket};
-use std::os::unix::net::{UnixListener};
-use std::fs::File;
 const HELLO: &str = "hello";
 
 struct HelloWorld;
@@ -53,28 +47,25 @@ impl ConfigServer {
     }
     pub fn serve_interactive(&mut self) {
         let rx = self.rx.take().unwrap();
+
         self.task = Some(tokio::spawn(async move {
+            let unix_listener = UnixListener::from_std(unsafe {std::os::unix::net::UnixListener::from_raw_fd(3)}).unwrap();
+            
             select! {
                 _ = rx => {
                     tracing::trace!("catch signal in config server.");
                     return Ok(());
                 },
-                _ = async {
-                    loop {
-                        let socket = unsafe { Socket::from_raw_fd(3) };
-                        // listener = socket.into_unix_listener();
-                        let std_unix_stream = unsafe { StdUnixStream::from_raw_fd(socket.as_raw_fd()) };
-                        let unix_stream = UnixStream::from_std(std_unix_stream).unwrap();
-                        let http = Http::new();
-                        let conn = http.serve_connection(unix_stream, HelloWorld);
-                        if let Err(e) = conn.await {
-                            tracing::error!("{}",e);
-                            return Err(anyhow::anyhow!("{}",e));
-                        }
+                stream = unix_listener.accept() => {
+                    let (stream, _) = stream.unwrap();
+
+                    let http = Http::new();
+                    let conn = http.serve_connection(stream, HelloWorld);
+                    if let Err(e) = conn.await {
+                        tracing::error!("{}",e);
+                        return Err(anyhow::anyhow!("{}",e));
                     }
-                    #[allow(unreachable_code)]
-                    Ok::<_, anyhow::Error>(())
-                } => {}
+                },
             };
             Ok(())
         }));
@@ -82,12 +73,6 @@ impl ConfigServer {
 
 }
 
-// async fn test() {
-//     let std_unix_stream = unsafe { StdUnixStream::from_raw_fd(3) };
-//     let unix_stream = UnixStream::from_std(std_unix_stream).unwrap();
-//     let http = Http::new();
-//     let conn = http.serve_connection(unix_stream, HelloWorld);
-// }
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut config_server = ConfigServer::new();
@@ -100,6 +85,3 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 
 }
-
-
-
