@@ -61,4 +61,25 @@ func main() {
 		fmt.Printf("%s: %+v\n", time.Now(), string(bodyBytes))
 		time.Sleep(time.Second)
 	}
+
+	//ctx := context.Background()
+	//client, err := jrpc.DialIPC(ctx, "@test-client.sock")
+	//if err != nil {
+	//	log.Fatal(err, "dialing rpc client")
+	//}
+	//
+	//for {
+	//	var ret string
+	//	fmt.Println("Waiting for toda to start")
+	//	var rpcError error
+	//	maxWaitTime := time.Millisecond * 2000
+	//	timeOut, cancel := context.WithTimeout(ctx, maxWaitTime)
+	//	defer cancel()
+	//	rpcError = client.CallContext(timeOut, &ret, "http://psedo-host/")
+	//	if rpcError != nil || ret != "ok" {
+	//		fmt.Println("Starting toda takes too long or encounter an error")
+	//		log.Fatal(rpcError, "toda startup takes too long or an error occurs: %s", ret)
+	//	}
+	//}
+
 }
