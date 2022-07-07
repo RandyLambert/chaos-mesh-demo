@@ -32,42 +32,37 @@ impl tower_service::Service<Request<Body>> for HelloWorld {
 #[derive(Debug)]
 pub struct ConfigServer {
     task: Option<JoinHandle<Result<(), Error>>>,
-    rx: Option<Receiver<()>>,
-    sender: Option<Sender<()>>,
 }
 
 impl ConfigServer {
     pub fn new() -> Self {
-        let (sender, rx) = channel();
         Self {
             task: None,
-            rx: Some(rx),
-            sender: Some(sender),
         }
     }
     pub fn serve_interactive(&mut self) {
-        let rx = self.rx.take().unwrap();
 
         self.task = Some(tokio::spawn(async move {
             let unix_listener = UnixListener::from_std(unsafe {std::os::unix::net::UnixListener::from_raw_fd(3)}).unwrap();
-            
-            select! {
-                _ = rx => {
-                    tracing::trace!("catch signal in config server.");
-                    return Ok(());
-                },
-                stream = unix_listener.accept() => {
-                    let (stream, _) = stream.unwrap();
 
-                    let http = Http::new();
-                    let conn = http.serve_connection(stream, HelloWorld);
-                    if let Err(e) = conn.await {
-                        tracing::error!("{}",e);
-                        return Err(anyhow::anyhow!("{}",e));
+            loop {
+                match unix_listener.accept().await {
+                    Ok((mut stream, addr)) => {
+                        println!("test");
+
+                        let http = Http::new();
+                        let conn = http.serve_connection(stream, HelloWorld);
+                        if let Err(e) = conn.await {
+                            tracing::error!("{}",e);
+                            return Err(anyhow::anyhow!("{}",e));
+                        }
                     }
-                },
-            };
-            Ok(())
+                    Err(e) => {
+                        tracing::error!("error : accept connection failed");
+                        return Err(anyhow::anyhow!("{}", e));
+                    }
+                }
+            }
         }));
     }
 

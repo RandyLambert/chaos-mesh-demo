@@ -30,7 +30,7 @@ func main() {
 	}
 	listener := rawListener.(*net.UnixListener)
 	listenSocket, err := listener.File()
-
+	// pid zuoyong, zhuyaowenw
 	pid := os.Getpid()
 	mntArg := fmt.Sprintf("--mnt=/proc/%d/ns/mnt", pid)
 	pidArg := fmt.Sprintf("--pid=/proc/%d/ns/pid", pid)
